@@ -28,24 +28,22 @@
 # See docs/COPYRIGHT.rdoc for more details.
 #++
 
-module Queries::Members
-  query = Queries::Members::MemberQuery
-  filter_ns = Queries::Members::Filters
+class Queries::Members::Orders::EmailOrder < Queries::BaseOrder
+  self.model = Principal
 
-  Queries::Register.filter query, filter_ns::NameFilter
-  Queries::Register.filter query, filter_ns::AnyNameAttributeFilter
-  Queries::Register.filter query, filter_ns::ProjectFilter
-  Queries::Register.filter query, filter_ns::StatusFilter
-  Queries::Register.filter query, filter_ns::BlockedFilter
-  Queries::Register.filter query, filter_ns::GroupFilter
-  Queries::Register.filter query, filter_ns::RoleFilter
-  Queries::Register.filter query, filter_ns::PrincipalFilter
-  Queries::Register.filter query, filter_ns::CreatedAtFilter
-  Queries::Register.filter query, filter_ns::UpdatedAtFilter
+  def self.key
+    :mail
+  end
 
-  order_ns = Queries::Members::Orders
+  private
 
-  Queries::Register.order query, order_ns::DefaultOrder
-  Queries::Register.order query, order_ns::NameOrder
-  Queries::Register.order query, order_ns::EmailOrder
+  def order
+    with_raise_on_invalid do
+      order_string = "NULLIF(mail, '')"
+      order_string += " DESC" if direction == :desc
+      order_string += " NULLS LAST"
+
+      model.order(Arel.sql(order_string))
+    end
+  end
 end
